@@ -1,0 +1,18 @@
+RST=`tput sgr0`
+R=`tput setaf 1`
+G=`tput setaf 2`
+B=`tput setaf 4`
+M=`tput setaf 5`
+C=`tput setaf 6`
+
+ADMINIP=192.168.124.10
+CIP=192.168.124.21
+AUTHIP=192.168.124.81
+AUTHUSER=admin
+AUTHPASS=crowbar
+ADMINTENANT=admin
+HOSTNAME=contrail
+
+
+
+
