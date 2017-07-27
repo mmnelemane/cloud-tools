@@ -14,39 +14,57 @@ source $MYDIR/config
 echo "${C}--------------------------------------------------------------------------"
 echo "This script will setup Contrail Contrail Plane on this node"
 echo "Make sure that you have setup repos on Admin node first"
-echo "It will perform the following steps:"
-echo "- Check Kernel"
-echo "- Add contrail repos"
-echo "- Install packages to run Contrail Control Plane"
-echo "- Install Contrail rpms"
-echo "- Configure Cassandra"
-echo "- Configure Zookeeper"
-echo "- Configure HAProxy"
-echo "- Configure RabbitMQ server"
-echo "- Configure Redis"
-echo "- Configure Opscenter"
-echo "- Configure Datastax agent"
-echo "- Configure Contrail Database"
-echo "- Configure Contrail Config"
-echo "- Configure Contrail Analytics"
-echo "- Configure Contrail Control"
-echo "- Configure Contrail WebUI"
-echo "- Install Contrail tools"
 echo "--------------------------------------------------------------------------${RST}"
 read -rsn1 -p"Press any key to continue";echo
 
 echo "--------------------------------------------------------------------------"
 echo "-${M} Checking Kernel ${RST}"
+echo "It will perform the following steps:"
+echo "- Check Kernel"
+check_kernel()
+echo "- Add contrail repos"
+echo "- Install packages to run Contrail Control Plane"
+echo "- Install Contrail rpms"
+install_packages()
+echo "- Configure HAProxy"
+haproxy_setup()
+echo "- Configure Cassandra"
+cassandra_setup()
+echo "- Configure Zookeeper"
+zookeeper_setup()
+echo "- Configure RabbitMQ server"
+rabbitmq_setup()
+echo "- Configure Redis"
+redis_setup()
+echo "- Configure Opscenter"
+opscenter_setup()
+echo "- Configure Datastax agent"
+datastax_agent_setup()
+echo "- Configure Contrail Database"
+supervisor_database_setup()
+echo "- Configure Contrail Config"
+supervisor_config_setup()
+echo "- Configure Contrail Analytics"
+supervisor_analytics_setup()
+echo "- Configure Contrail Control"
+supervisor_control_setup()
+echo "- Configure Contrail WebUI"
+supervisor_webui_setup()
+echo "- Install Contrail tools"
+provision_cp()
 
-KVER=`uname -a |awk '{print $3}'`
-echo "Installed kernel - $KVER"
-if [ "$KVER" == "4.4.59-92.17-default" ]; then
-  echo "${G}Kernel version supported${RST}"
-else
-  echo "${R}Kernel version not supported. Please upgrade/downgrade your kernel to 4.4.59-92.17-default"
-  echo "Run 'zypper in kernel-default=4.4.59-92.17.3' and then reboot the machine ${RST}"
-  exit 0
-fi
+function check_kernel()
+{
+    KVER=`uname -a |awk '{print $3}'`
+    echo "Installed kernel - $KVER"
+    if [ "$KVER" == "4.4.59-92.17-default" ]; then
+      echo "${G}Kernel version supported${RST}"
+    else
+      echo "${R}Kernel version not supported. Please upgrade/downgrade your kernel to 4.4.59-92.17-default"
+      echo "Run 'zypper in kernel-default=4.4.59-92.17.3' and then reboot the machine ${RST}"
+      exit 0
+    fi
+}
 
 function install_packages ()
 {
