@@ -1,0 +1,8 @@
+<network>
+  <name>XXadmin</name>
+  <uuid>UUID</uuid>
+  <bridge name='virbrXX' stp='on' delay='0'/>
+  <mac address='52:54:00:XX:00:01'/>
+  <domain name='cloudXX.suse.cisco-aci.lab'/>
+</network>
+
