@@ -29,7 +29,7 @@ import guestfs
 
 def _get_config(section, param):
     config = ConfigParser.ConfigParser()
-    config.read(open('acilab.conf'))
+    config.read('acilab.conf')
     return config.get(section, param)
 
 def _make_xml_from_template(template_file, variables, xml_file):
