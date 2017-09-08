@@ -157,19 +157,26 @@ def _create_node_disks(lab_id):
         os.system("qemu-img create -f qcow2 %s/%s%s 40G" % (image_path, lab_id, disk))
 
 
-def create_lab(lab_id, with_ha=False):
+def create_lab(args):
+    lab_id = args.lab_id
+    with_ha = args.with_ha
+
     _define_lab_net(lab_id)
     _define_lab_vms(lab_id)
     _copy_admin_image(lab_id)
     _create_node_disks(lab_id)
 
 
-def list_backups(lab_id, soc_version):
+def list_backups(args):
     # [{ 'name' : 'backup_name'
     #   'lab_id': <lab_id>
     #   'soc-version': '6'
     #   'path': <image_path> 
     #   'comment': <description/comment> }]
+
+    lab_id = args.lab_id
+    soc_version = args.soc_version
+
     backup_file = _get_config('default', 'backup_file')
     bf = open(backup_file, 'r')
     bk_list = [eval(x) for x in filter(None, bf.read().split('\n'))]
@@ -202,7 +209,7 @@ def _check_if_backup_exists(backup_name, backup_file):
     return ret_val
     
 
-def backup_lab(lab_id, soc_version, title, comment='None'):
+def backup_lab(args):
     # The backups are recorded as a list of dictionaries in the specified
     # backup record file and retrieved through list_backups() function.
     # The file is also used by the restore_lab() to fetch the right images
@@ -213,6 +220,11 @@ def backup_lab(lab_id, soc_version, title, comment='None'):
     #   'soc-version': '6'
     #   'path': <image_path> 
     #   'comment': <description/comment> }]
+
+    lab_id = args.lab_id
+    soc_version = args.soc_version
+    title = args.title
+    comment = args.comment
 
     backup_file = _get_config('default', 'backup_file')
     backup_path = _get_config('default', 'backup_storage_path')
@@ -237,10 +249,16 @@ def backup_lab(lab_id, soc_version, title, comment='None'):
                 "%s/%s-%s" % (backup_path, backup_name, file_name))
 
 
-def restore_lab(lab_id, soc_version, backup_name, with_delete):
+def restore_lab(args):
     # IODO (mmnelemane): Check if the restore is complted by listing and
     # verifying against the files in backup folder before returning or
     # deleting from the backup entry and provide suitable warning
+
+    lab_id = args.lab_id
+    soc_version = args.soc_version
+    backup_name = args.backup_name
+    with_delete = args.with_delete
+
     backup_file = _get_config('default', 'backup_file')
     backup_path = _get_config('default', 'backup_storage_path')
     image_path = _get_config('default', 'libvirt_image_path')
@@ -277,11 +295,15 @@ def restore_lab(lab_id, soc_version, backup_name, with_delete):
         file and the entries in the backup record are cleared before creating another backup.")
 
             
-def destroy_lab(lab_id, soc_version):
+def destroy_lab(args):
     # This function stops all the running VMs, deletes the instances and cache
     # if any and deletes the images in the main image path. It however does not
     # create or delete any of the backups. You need to use the backup functions
     # to work with the backup images.
+
+    lab_id = args.lab_id
+    soc_version = args.soc_version
+
     image_path = _get_config('default', 'libvirt_image_path')
     domain_names = []
     conn = libvirt.open('qemu:///system')
@@ -321,9 +343,9 @@ def list_labs():
     pass
 
 
-def show_lab(lab_id):
+def show_lab(args):
     # TODO (mmnelemane): Implementation to show data from the input lab
-    pass
+    lab_id = args.lab_id
 
 
 def parse_args():
