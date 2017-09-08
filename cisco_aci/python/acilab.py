@@ -27,7 +27,7 @@ import fileinput
 import shutil
 import guestfs
 
-def _get_config(section='default', param):
+def _get_config(section, param):
     config = ConfigParser.ConfigParser()
     config.read(open('acilab.conf'))
     return config.get(section, param)
@@ -71,13 +71,11 @@ def _define_lab_net(lab_id):
 
 
 def _define_lab_vms(lab_id):
-    # $1 is the lab number
-    # TEMPXML=$(mktemp -d)
-    #  echo "Defining lab VMs for $1soclab"
-    # cp /root/virsh-xmls/*.xml "$TEMPXML"
-    # rm -rf "$TEMPXML"/net-*.xml
+    # TODO (mmnelemane): This function currently prepares xmls with only 2 
+    # interfaces. It should be updated to be flexible in choosing the number
+    # of interfaces and corresponding bus address assignment.
     num_computes = _get_config("default", "number_of_computes")
-    nic_count = _get_config("default". "nic_count_in_compute")
+    nic_count = _get_config("default", "nic_count_in_compute")
     template_dir = _get_config("default", "template_dir")
     xml_dir = _get_config("default", "xml_dir")
 
@@ -92,13 +90,13 @@ def _define_lab_vms(lab_id):
             vm_function = _get_config("nic%d:%d:%d" % (lab_id, vms, nic), 'vm_function')
             srcbusaddr = "bus='%s' slot='%s' function='%s'" % (src_bus, src_slot, src_function)
             vmbusaddr = "bus='%s' slot='%s' function='%s'" % (vm_bus, vm_slot, vm_function)
-            bus_addresses.append( {'src_bus_address': srcbusaddr,
-                                   'vm_bus_address': vmbusaddr }
+            bus_addresses.append({'src_bus_address': srcbusaddr,
+                                   'vm_bus_address': vmbusaddr })
         template_vars = { 'lab_id': lab_id,
-                          'src_bus_address_nic1' % nic: bus_addresses[0]['src_bus_address'],
-                          'vm_bus_address_nic1' % nic: bus_addresses[0]['vm_bus_address'] 
-                          'src_bus_address_nic2' % nic: bus_addresses[1]['src_bus_address'],
-                          'vm_bus_address_nic2' % nic: bus_addresses[1]['vm_bus_address'] } 
+                          'src_bus_address_nic1': bus_addresses[0]['src_bus_address'],
+                          'vm_bus_address_nic1': bus_addresses[0]['vm_bus_address'],
+                          'src_bus_address_nic2': bus_addresses[1]['src_bus_address'],
+                          'vm_bus_address_nic2': bus_addresses[1]['vm_bus_address'] } 
         _make_xml_from_template("%s/soc-compute.xml.tpl" % template_dir,
             template_vars, "%s/%dsoc-compute%d.xml" % (xml_dir, lab_id, vms))
 
@@ -159,7 +157,7 @@ def _create_node_disks(lab_id):
         os.system("qemu-img create -f qcow2 %s/%s%s 40G" % (image_path, lab_id, disk))
 
 
-def create_lab(lab_id):
+def create_lab(lab_id, with_ha=False):
     _define_lab_net(lab_id)
     _define_lab_vms(lab_id)
     _copy_admin_image(lab_id)
@@ -177,7 +175,7 @@ def list_backups(lab_id, soc_version):
     bk_list = [eval(x) for x in filter(None, bf.read().split('\n'))]
     
     if len(bk_list) == 0:
-        print "No Backups Available."
+        print("No Backups Available.")
         return
 
     print("|lab_id".ljust(10),
@@ -247,18 +245,18 @@ def restore_lab(lab_id, soc_version, backup_name, with_delete):
     backup_path = _get_config('default', 'backup_storage_path')
     image_path = _get_config('default', 'libvirt_image_path')
     if not _check_if_backup_exists(backup_name, backup_file):
-        print "ERROR: Backup with name %s does not exist. Cannot restore" % backup_name
+        print("ERROR: Backup with name %s does not exist. Cannot restore" % backup_name)
         return
-    if not os.path.exists("%s/%sbackups" % (backup_path, lab_id):
-        print "ERROR: The backup path do not exist for this lab. Cannot restore"
+    if not os.path.exists("%s/%sbackups" % (backup_path, lab_id)):
+        print("ERROR: The backup path do not exist for this lab. Cannot restore")
         return
     if not os.listdir("%s/%sbackups" % (backup_path, lab_id)):
-        print "ERROR: No backup files for this lab. Cannot restore."
+        print("ERROR: No backup files for this lab. Cannot restore.")
         return
-    for file_name in os.listdir("%s/%sbackups" % (backup_path, lab_id):
+    for file_name in os.listdir("%s/%sbackups" % (backup_path, lab_id)):
         if file_name.startswith(backup_name) and file_name.endswith('qcow2'):
             base_filename = file_name.split('%s-' % backup_name)[1]
-            print "Restoring %s for lab %s" % (base_filename, lab_id)
+            print("Restoring %s for lab %s" % (base_filename, lab_id))
             shutil.copy(file_name, "%s/%s" % (image_path, base_filename))
             # remove the backup copy once restore is done.
             if (with_delete):
@@ -275,8 +273,8 @@ def restore_lab(lab_id, soc_version, backup_name, with_delete):
         bf.truncate()
         bf.close()
     else:
-        print "WARNING: The files are redundant if the restore is successful. Make sure the\
-        file and the entries in the backup record are cleared before creating another backup."
+        print("WARNING: The files are redundant if the restore is successful. Make sure the\
+        file and the entries in the backup record are cleared before creating another backup.")
 
             
 def destroy_lab(lab_id, soc_version):
@@ -318,47 +316,60 @@ def destroy_lab(lab_id, soc_version):
     conn.close()
 
 
+def list_labs():
+    # TODO (mmnelemane): Implementation to list all available labs
+    pass
+
+
+def show_lab(lab_id):
+    # TODO (mmnelemane): Implementation to show data from the input lab
+    pass
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Useful commands for the ACI setup.")
     subparsers = parser.add_subparsers(help='sub-command help')
 
     parser_create_lab = subparsers.add_parser(
         'create', help='Create lab from existing or new images')
-    parser_create_lab.add_argument('--lab-id', metvars='ID', type=str)
-    parser_create_lab.add_argument('--with-ha', metvars='ID', type=bool)
+    parser_create_lab.add_argument('--lab-id', metavar='ID', type=str)
+    parser_create_lab.add_argument('--with-ha', metavar='ID', type=bool)
     parser_create_lab.set_defaults(func=create_lab)
 
     parser_delete_lab = subparsers.add_parser(
-        'delete', help='Delete the specified lab with artifacts')
-    parser_delete_lab.add_argument('--lab-id', metvars='ID', type=str)
-    parser_delete_lab.set_defaults(func=delete_lab)
+        'destroy', help='Destroy and undefined the specified lab with artifacts')
+    parser_delete_lab.add_argument('--lab-id', metavar='ID', type=str)
+    parser_delete_lab.set_defaults(func=destroy_lab)
 
     parser_backup_lab = subparsers.add_parser(
         'backup', help='Backup current lab in the given location')
-    parser_backup_lab.add_argument('--lab-id', metvars='ID', type=str)
-    parser_backup_lab.add_argument('--path', metvars='ID', type=str)
-    parser_backup_lab.add_argument('--comment', metavars='ID', type=str)
+    parser_backup_lab.add_argument('--lab-id', metavar='ID', type=str)
+    parser_backup_lab.add_argument('--soc-version', metavar='ID', type=str)
+    parser_backup_lab.add_argument('--title', metavar='ID', type=str)
+    parser_backup_lab.add_argument('--comment', metavar='ID', type=str)
     parser_backup_lab.set_defaults(func=backup_lab)
 
     parser_list_backups = subparsers.add_parser(
         'list-backups', help='Lists the available backup entries')
-    parser_backup_lab.add_argument('--lab-id', metavars='ID', type=str)
-    parser_backup_lab.set_defaults(func=list_backups)
+    parser_list_backups.add_argument('--lab-id', metavar='ID', type=str)
+    parser_list_backups.add_argument('--soc-version', metavar='ID', type=str)
+    parser_list_backups.set_defaults(func=list_backups)
 
     parser_restore_lab = subparsers.add_parser(
         'restore', help='Restores lab from the available backups')
-    parser_restore_lab.add_argument('--lab-id', metvars='ID', type=int)
-    parser_restore_lab.add_argument('--backup-id', metvars='ID', type=str)
-    parser_restore_lab.add_argument('--with-delete', metavars='ID', type=bool)
+    parser_restore_lab.add_argument('--lab-id', metavar='ID', type=str)
+    parser_restore_lab.add_argument('--soc-version', metavar='ID', type=str)
+    parser_restore_lab.add_argument('--backup-name', metavar='ID', type=str)
+    parser_restore_lab.add_argument('--with-delete', metavar='ID', type=bool)
     parser_restore_lab.set_defaults(func=restore_lab)
 
     parser_list_labs = subparsers.add_parser(
         'list', help='List all available labs')
-    parser_list_lab.set_defaults(func=list_labs)
+    parser_list_labs.set_defaults(func=list_labs)
 
     parser_show_lab = subparsers.add_parser(
         'show', help='Show details of the given lab')
-    parser_show_lab.add_argument('--lab-id', metavars='ID', type=str)
+    parser_show_lab.add_argument('--lab-id', metavar='ID', type=str)
     parser_show_lab.set_defaults(func=show_lab)
 
     return parser.parse_args()
