@@ -178,7 +178,7 @@ backup_lab() {
   if [ ! -f /var/lib/libvirt/images/${1}backups/backup.list ]; then
     touch /var/lib/libvirt/images/${1}backups/backup.list
   fi
-  if [ $(grep -c ${3} /var/lib/libvirt/images/${1}backups/backup.list) -gt 0 ]; then
+  if [ $(grep -c ^${2}:${3} /var/lib/libvirt/images/${1}backups/backup.list) -gt 0 ]; then
     echo "Backup not created because duplicate backup name specified."
     exit 3
   fi
@@ -201,7 +201,7 @@ restore_lab() {
   if [ ! -f /var/lib/libvirt/images/${1}backups/backup.list ]; then
     touch /var/lib/libvirt/images/${1}backups/backup.list
   fi
-  if [ $(grep -c ${3} /var/lib/libvirt/images/${1}backups/backup.list) -eq 0 ]; then
+  if [ $(grep -c ^${2}:${3} /var/lib/libvirt/images/${1}backups/backup.list) -eq 0 ]; then
     echo "Unable to restore backup because lab name is not found."
     exit 3
   fi
@@ -227,7 +227,7 @@ delete_lab() {
   if [ ! -f /var/lib/libvirt/images/${1}backups/backup.list ]; then
     touch /var/lib/libvirt/images/${1}backups/backup.list
   fi
-  if [ $(grep -c ${3} /var/lib/libvirt/images/${1}backups/backup.list) -eq 0 ]; then
+  if [ $(grep -c ^${2}:${3} /var/lib/libvirt/images/${1}backups/backup.list) -eq 0 ]; then
     echo "Unable to delete backup because lab name is not found."
     exit 3
   fi
