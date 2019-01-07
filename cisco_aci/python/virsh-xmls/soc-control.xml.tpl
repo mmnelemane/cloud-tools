@@ -1,6 +1,6 @@
 <domain type='kvm'>
-  <name>XXsoc-control1</name>
-  <uuid>UUID</uuid>
+  <name>%(lab_id)soc-control1</name>
+  <uuid>%(_uuid)</uuid>
   <memory unit='KiB'>8388608</memory>
   <currentMemory unit='KiB'>8388608</currentMemory>
   <vcpu placement='static'>4</vcpu>
@@ -32,14 +32,14 @@
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2'/>
-      <source file='/var/lib/libvirt/images/XXsoc-control1.qcow2'/>
+      <source file='/var/lib/libvirt/images/%(lab_id)soc-control1.qcow2'/>
       <target dev='vda' bus='virtio'/>
       <boot order='2'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x08' function='0x0'/>
     </disk>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2'/>
-      <source file='/var/lib/libvirt/images/XXsoc-control1-cinder.qcow2'/>
+      <source file='/var/lib/libvirt/images/%(lab_id)soc-control1-cinder.qcow2'/>
       <target dev='vdb' bus='virtio'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x0b' function='0x0'/>
     </disk>
@@ -63,14 +63,14 @@
       <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
     </controller>
     <interface type='network'>
-      <mac address='52:54:00:XX:02:01'/>
-      <source network='XXadmin'/>
+      <mac address='52:54:00:%(lab_id):02:01'/>
+      <source network='%(lab_id)admin'/>
       <model type='virtio'/>
       <boot order='1'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
     </interface>
     <interface type='bridge'>
-      <mac address='52:54:00:XX:02:02'/>
+      <mac address='52:54:00:%(lab_id):02:02'/>
       <source bridge='br0'/>
       <model type='virtio'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'/>

@@ -1,6 +1,6 @@
 <domain type='kvm'>
-  <name>%(lab_id)compute1</name>
-  <uuid>%(uuid)</uuid>
+  <name>_namecompute1</name>
+  <uuid>_uuid</uuid>
   <memory unit='KiB'>8388608</memory>
   <currentMemory unit='KiB'>8388608</currentMemory>
   <vcpu placement='static'>4</vcpu>

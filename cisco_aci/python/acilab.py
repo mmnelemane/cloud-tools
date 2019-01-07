@@ -42,8 +42,10 @@ def _define_lab_net(lab_id):
     template_dir = _get_config("default", "template_dir")
     xml_dir = _get_config("default", "xml_dir")
     net_id = "%sadmin" % lab_id
-    variables = { 'name': net_id,
-                  'lab_id': lab_id }
+    net_uuid = uuid.uuid1()
+    variables = { '_name': net_id,
+                  'lab_id': lab_id,
+                  '_uuid': net_uuid }
     _make_xml_from_template("%s/net-admin.xml.tpl" % 
         template_dir, variables, "%s/net-admin.xml" % xml_dir)
 
@@ -92,7 +94,9 @@ def _define_lab_vms(lab_id):
             vmbusaddr = "bus='%s' slot='%s' function='%s'" % (vm_bus, vm_slot, vm_function)
             bus_addresses.append({'src_bus_address': srcbusaddr,
                                    'vm_bus_address': vmbusaddr })
+        vm_uuid = uuid.uuid1()
         template_vars = { 'lab_id': lab_id,
+                          '_uuid': vm_uuid,
                           'src_bus_address_nic1': bus_addresses[0]['src_bus_address'],
                           'vm_bus_address_nic1': bus_addresses[0]['vm_bus_address'],
                           'src_bus_address_nic2': bus_addresses[1]['src_bus_address'],
